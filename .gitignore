@@ -213,3 +213,8 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
+
+
+packages/clrsecurity_june10/*.dll
+packages/clrsecurity_june10/*.pdb
+packages/clrsecurity_june10/*.xml

@@ -55,7 +55,8 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="Security.Cryptography">
-      <HintPath>..\clrsecurity_june10\Security.Cryptography.dll</HintPath>
+      <HintPath>packages\clrsecurity_june10\Security.Cryptography.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -102,7 +103,12 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="EmbeddedDlls\CommandLine.dll" />
+    <EmbeddedResource Include="packages\clrsecurity_june10\Security.Cryptography.dll">
+      <LogicalName>$(TargetName).EmbeddedDlls.Security.Cryptography.dll</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="packages\CommandLineParser.1.9.71\lib\net45\CommandLine.dll">
+      <LogicalName>$(TargetName).EmbeddedDlls.CommandLine.dll</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

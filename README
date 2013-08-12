@@ -17,7 +17,7 @@ Decrypt files with the same key:
 
 Requirements for build:
 Visual Studio 2012 and .NET 4.5 (probably easily portable to .NET 3.5)
-You need to download the CLR Security DLLs separately due to licensing restrictions. Download the clrsecurity_june10.zip from the site and unpack it to a directory named "clrsecurity_june10" parallel to this directory.
+You need to download the CLR Security DLLs separately due to licensing restrictions. Download the clrsecurity_june10.zip from the site and unpack it to the directory named "packages\clrsecurity_june10".
 
 
 Referenced software:
