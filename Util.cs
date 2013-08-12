@@ -1,20 +1,11 @@
 ﻿using System;
 using System.IO;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace BulkFileEncrypter
 {
     public static class Util
     {
-        public static byte[] HashString(string input)
-        {
-            using (var hasher = new SHA256Managed())
-            {
-                return hasher.ComputeHash(Encoding.UTF8.GetBytes(input));
-            }
-        }
-
         public static string HexDump(byte[] input)
         {
             return BitConverter.ToString(input).Replace("-", String.Empty);

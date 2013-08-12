@@ -27,7 +27,7 @@ namespace BulkFileEncrypter
 
         private static string GenerateEncryptedFileName(string padding, string fileName, int levels)
         {
-            var encFileName = Util.HexDump(Util.HashString(padding + fileName));
+            var encFileName = Util.HexDump(Hashing.HashString(padding + fileName));
 
             if (levels == 0)
             { 

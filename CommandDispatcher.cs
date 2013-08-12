@@ -65,11 +65,8 @@ namespace BulkFileEncrypter
 
         public static void Generate()
         {
-            using (var aes = new AesCryptoServiceProvider())
-            {
-                aes.GenerateKey();
-                Console.WriteLine("Generated key: {0}", Convert.ToBase64String(aes.Key));
-            }
+            var key = FileEncrypter.GenerateKey();
+            Console.WriteLine("Generated key: {0}", Convert.ToBase64String(key));
         }
     }
 
