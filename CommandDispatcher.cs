@@ -10,34 +10,32 @@ namespace BulkFileEncrypter
 {
     public static class CommandDispatcher
     {
-        public static void Encrypt(EncryptOptions options)
+        public static void Encrypt(EncryptOptions options, IOutputHandler outputHandler)
         {
-            PerformCommand(options, "Encryption", () => EncryptCommandHelper.GenerateEncryptionFileList(options), EncryptCommandHelper.PerformEncryption);
-            if (options.Prune) EncryptCommandHelper.PruneEncryptedDirectory(options);
+            PerformCommand(options, outputHandler, "Encryption", () => EncryptCommandHelper.GenerateEncryptionFileList(options), EncryptCommandHelper.PerformEncryption);
+            if (options.Prune) EncryptCommandHelper.PruneEncryptedDirectory(options, outputHandler);
         }
 
-        public static void Decrypt(DecryptOptions options)
+        public static void Decrypt(DecryptOptions options, IOutputHandler outputHandler)
         {
-            PerformCommand(options, "Decryption", () => DirectoryDigger.GetFilesRecursive(options.SourceDir).ToList(), DecryptCommandHelper.PerformDecryption);
+            PerformCommand(options, outputHandler, "Decryption", () => DirectoryDigger.GetFilesRecursive(options.SourceDir).ToList(), DecryptCommandHelper.PerformDecryption);
         }
 
-        private static void PerformCommand<T>(CommonOptions options, string action, Func<IList<T>> fileList, Func<CommonOptions, T, byte[], long> operation)
+        private static void PerformCommand<T>(CommonOptions options, IOutputHandler outputHandler, string action, Func<IList<T>> fileList, Func<CommonOptions, IOutputHandler, T, byte[], long> operation)
         {
-            Console.Write("{0} started", action);
+            outputHandler.Write("{0} started", action);
 
             var sw = Stopwatch.StartNew();
 
             var files = fileList();
-
             if (files == null || files.Count == 0)
             {
-                Console.WriteLine(" (no files found)");
+                outputHandler.WriteLine(" (no files found)");
                 return;
             }
 
-            Console.WriteLine(options.Verbose ? " (" + files.Count + " files)" : string.Empty);
-
-            var totalSize = files.Sum(o => operation(options, o, options.BinaryKey));
+            outputHandler.WriteVerboseOrNormalLine("", " ({0} files)", files.Count);
+            var totalSize = files.Sum(o => operation(options, outputHandler, o, options.BinaryKey));
 
             sw.Stop();
 
@@ -54,19 +52,19 @@ namespace BulkFileEncrypter
                         avgSpeed = (totalSize/elapsedSecs).ToString(CultureInfo.InvariantCulture);
                     }
 
-                    Console.WriteLine("{0} of {1} files complete ({2}MB in {3:hh\\:mm\\:ss}, avg {4}MB/s)", action, files.Count, totalSize, sw.Elapsed, avgSpeed);
+                    outputHandler.WriteVerboseLine("{0} of {1} files complete ({2}MB in {3:hh\\:mm\\:ss}, avg {4}MB/s)", action, files.Count, totalSize, sw.Elapsed, avgSpeed);
                 }
                 else
                 {
-                    Console.WriteLine("{0} of {1} files complete", action, files.Count);
+                    outputHandler.WriteLine("{0} of {1} files complete", action, files.Count);
                 }
             }
         }
 
-        public static void Generate()
+        public static void Generate(IOutputHandler outputHandler)
         {
             var key = FileEncrypter.GenerateKey();
-            Console.WriteLine("Generated key: {0}", Convert.ToBase64String(key));
+            outputHandler.WriteLine("Generated key: {0}", Convert.ToBase64String(key));
         }
     }
 
@@ -78,81 +76,77 @@ namespace BulkFileEncrypter
 
             if (!options.Force)
             {
-                files = files.Where(x =>
-                {
-                    var dstFile = Path.Combine(options.DestinationDir, x.EncFileName);
-                    if (!File.Exists(dstFile)) return true;
-
-                    var source = File.GetLastWriteTimeUtc(x.FileName);
-                    var destination = File.GetLastWriteTimeUtc(dstFile);
-                    return source > destination;
-                }).ToList();
+                files = files.Where(x => IsSourceFileNewer(x.FileName, Path.Combine(options.DestinationDir, x.EncFileName))).ToList();
             }
             return files;
         }
 
-        public static long PerformEncryption(CommonOptions options, EncryptOperation o, byte[] key)
+        private static bool IsSourceFileNewer(string sourceFileName, string destinationFileName)
         {
-            if (options.Verbose) Console.Write("\t{0} => ", o.RelFileName);
+            if (!File.Exists(destinationFileName))
+            {
+                return true;
+            }
+
+            return File.GetLastWriteTimeUtc(sourceFileName) > File.GetLastWriteTimeUtc(destinationFileName);
+        }
+
+        public static long PerformEncryption(CommonOptions options, IOutputHandler outputHandler, EncryptOperation o, byte[] key)
+        {
+            outputHandler.WriteVerbose("\t{0} => ", o.RelFileName);
+
             var result = FileEncrypter.EncryptFile(options.DestinationDir, o, key);
             if (result.HasResult)
             {
-                if (options.Verbose) Console.WriteLine(o.EncFileName);
+                outputHandler.WriteVerboseLine(o.EncFileName);
                 return result.Result.Item2;
             }
-            if (options.Verbose)
-            {
-                Console.WriteLine("Failed to encrypt file! ({0})", result.ErrorMessage);
-            }
-            else
-            {
-                Console.WriteLine("\t{0} => Failed to encrypt file! ({1})", o.RelFileName, result.ErrorMessage);
-            }
 
+            outputHandler.WriteVerboseOrNormalLine("\t{0} => Failed to encrypt file! ({1})", "Failed to encrypt file! ({1})", o.RelFileName, result.ErrorMessage);
             return 0;
         }
 
-        public static void PruneEncryptedDirectory(EncryptOptions options)
+        public static void PruneEncryptedDirectory(EncryptOptions options, IOutputHandler outputHandler)
         {
-            if (options.Verbose)
-            {
-                Console.WriteLine();
-                Console.Write("Pruning files");
-            }
+            outputHandler.WriteVerboseLine();
+            outputHandler.WriteVerbose("Pruning files");
 
             int count = 0;
-            var validHashes = new HashSet<string>(EncryptOperationFactory.Build(options.SourceDir, DirectoryDigger.GetFilesRecursive(options.SourceDir), options.BinaryKey[0], options.Levels).Select(x => x.EncFileName));
-            foreach (var file in Directory.GetFiles(options.DestinationDir))
+            var validFiles = EncryptOperationFactory.Build(options.SourceDir, DirectoryDigger.GetFilesRecursive(options.SourceDir), options.BinaryKey[0], options.Levels).Select(x => x.EncFileName);
+            var validHashes = new HashSet<string>(validFiles.Select(Path.GetFileName));
+            foreach (var file in DirectoryDigger.GetFilesRecursive(options.DestinationDir))
             {
                 var fileName = Path.GetFileName(file);
                 if (!string.IsNullOrWhiteSpace(fileName) && !validHashes.Contains(fileName))
                 {
-                    if (options.Verbose)
+                    if (count == 0)
                     {
-                        if (count == 0) Console.WriteLine();
-                        Console.WriteLine("\t{0}", fileName);
+                        outputHandler.WriteVerboseLine();
                     }
+                    outputHandler.WriteVerboseLine("\t{0}", fileName);
                     File.Delete(file);
                     count++;
                 }
             }
 
-            if (options.Verbose) Console.WriteLine(count == 0 ? " (no files found)" : "Pruned " + count + " files");
+            outputHandler.WriteVerboseLine(count == 0 ? " (no files found)" : "Pruned " + count + " files");
         }
     }
 
     public static class DecryptCommandHelper
     {
-        public static long PerformDecryption(CommonOptions options, string file, byte[] key)
+        public static long PerformDecryption(CommonOptions options, IOutputHandler outputHandler, string file, byte[] key)
         {
-            if (options.Verbose) Console.Write("{0} => ", file.Replace(options.SourceDir, "").TrimStart(new[] {Path.DirectorySeparatorChar}));
+            outputHandler.WriteVerbose("{0} => ", file.Replace(options.SourceDir, "").TrimStart(new[] { Path.DirectorySeparatorChar }));
+
             var result = FileEncrypter.DecryptFile(options.DestinationDir, file, key);
             if (result.HasResult)
             {
-                if (options.Verbose) Console.WriteLine(result.Result.Item1.Replace(options.DestinationDir, "").TrimStart(new[] {Path.DirectorySeparatorChar}));
+                outputHandler.WriteVerboseLine(result.Result.Item1.Replace(options.DestinationDir, "").TrimStart(new[] { Path.DirectorySeparatorChar }));
                 return result.Result.Item2;
             }
-            Console.WriteLine("Failed to decrypt file! ({0})", result.ErrorMessage);
+
+            outputHandler.WriteLine("Failed to decrypt file! ({0})", result.ErrorMessage);
             return 0;
         }
     }

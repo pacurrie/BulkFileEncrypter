@@ -101,10 +101,6 @@ namespace BulkFileEncrypter
     {
     }
 
-    public class GenerateOptions
-    {
-    }
-
     public class CommonOptions
     {
         [Option('k', "key", Required = true, HelpText = "Encryption key to use (base64 encoded)")]

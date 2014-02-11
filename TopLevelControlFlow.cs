@@ -21,13 +21,13 @@ namespace BulkFileEncrypter
             switch (invokedCommand)
             {
                 case "encrypt":
-                    HandleValidation(() => OptionsValidator.Validate(options.Encrypt), () => CommandDispatcher.Encrypt(options.Encrypt));
+                    HandleValidation(() => OptionsValidator.Validate(options.Encrypt), () => CommandDispatcher.Encrypt(options.Encrypt, new StdOutHandler(options.Encrypt.Verbose)));
                     break;
                 case "decrypt":
-                    HandleValidation(() => OptionsValidator.Validate(options.Decrypt), () => CommandDispatcher.Decrypt(options.Decrypt));
+                    HandleValidation(() => OptionsValidator.Validate(options.Decrypt), () => CommandDispatcher.Decrypt(options.Decrypt, new StdOutHandler(options.Decrypt.Verbose)));
                     break;
                 case "generate":
-                    HandleValidation(() => null, CommandDispatcher.Generate);
+                    HandleValidation(() => null, () => CommandDispatcher.Generate(new StdOutHandler(false)));
                     break;
                 default:
                     Console.WriteLine(options.GetUsage());
