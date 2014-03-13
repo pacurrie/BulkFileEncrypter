@@ -95,6 +95,9 @@ namespace BulkFileEncrypter
 
         [Option('l', "levels", Required = false, DefaultValue = 2, HelpText = "How many levels to use in the destination directory")]
         public int Levels { get; set; }
+
+        [Option('i', "ignore", Required = false, HelpText = "Filepath to ignore")]
+        public string IgnoreFilePath { get; set; }
     }
 
     public class DecryptOptions : CommonOptions
@@ -112,7 +115,7 @@ namespace BulkFileEncrypter
         [Option('d', "dst", Required = true, HelpText = "Destination directory")]
         public string DestinationDir { get; set; }
 
-        [Option('v', "verbose", DefaultValue = false, HelpText = "Verbose output")]
+        [Option('v', "verbose", Required = false, DefaultValue = false, HelpText = "Verbose output")]
         public bool Verbose { get; set; }
 
         public byte[] BinaryKey { get { return Convert.FromBase64String(Key); } }
