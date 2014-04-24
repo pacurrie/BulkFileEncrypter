@@ -72,7 +72,7 @@ namespace BulkFileEncrypter
     {
         public static IList<EncryptOperation> GenerateEncryptionFileList(EncryptOptions options)
         {
-            var fileNames = DirectoryDigger.GetFilesRecursive(options.SourceDir).Where(x => options.IgnoreFilePath == string.Empty || !x.Contains(options.IgnoreFilePath));
+            var fileNames = DirectoryDigger.GetFilesRecursive(options.SourceDir).Where(x => string.IsNullOrWhiteSpace(options.IgnoreFilePath) || !x.Contains(options.IgnoreFilePath));
             var files = EncryptOperationFactory.Build(options.SourceDir, fileNames, options.BinaryKey[0], options.Levels).ToList();
 
             if (!options.Force)
@@ -88,6 +88,7 @@ namespace BulkFileEncrypter
             {
                 return true;
             }
+
 
             return File.GetLastWriteTimeUtc(sourceFileName) > File.GetLastWriteTimeUtc(destinationFileName);
         }
@@ -113,7 +114,7 @@ namespace BulkFileEncrypter
             outputHandler.WriteVerbose("Pruning files");
 
             int count = 0;
-            var fileNames = DirectoryDigger.GetFilesRecursive(options.SourceDir).Where(x => options.IgnoreFilePath == string.Empty || !x.Contains(options.IgnoreFilePath));
+            var fileNames = DirectoryDigger.GetFilesRecursive(options.SourceDir).Where(x => string.IsNullOrWhiteSpace(options.IgnoreFilePath) || !x.Contains(options.IgnoreFilePath));
             var validFiles = EncryptOperationFactory.Build(options.SourceDir, fileNames, options.BinaryKey[0], options.Levels).Select(x => x.EncFileName);
             var validHashes = new HashSet<string>(validFiles.Select(Path.GetFileName));
             foreach (var file in DirectoryDigger.GetFilesRecursive(options.DestinationDir))
