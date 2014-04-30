@@ -82,10 +82,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="LICENSE" />
-    <None Include="LICENSE.CommandLineParser" />
     <None Include="packages.config" />
-    <None Include="README" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5">

@@ -1,7 +1,16 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BulkFileEncrypter", "BulkFileEncrypter\BulkFileEncrypter.csproj", "{7F2ADD39-A334-4195-B7C1-8F4C6F7608A2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Readme and licenses", "Readme and licenses", "{43E805F9-1EDA-45AB-BB96-A6851B18B302}"
+	ProjectSection(SolutionItems) = preProject
+		LICENSE = LICENSE
+		LICENSE.CommandLineParser = LICENSE.CommandLineParser
+		README = README
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
