@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BulkFileEncrypter", "BulkFileEncrypter.csproj", "{7F2ADD39-A334-4195-B7C1-8F4C6F7608A2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BulkFileEncrypter", "BulkFileEncrypter\BulkFileEncrypter.csproj", "{7F2ADD39-A334-4195-B7C1-8F4C6F7608A2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
