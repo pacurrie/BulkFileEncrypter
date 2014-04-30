@@ -105,9 +105,11 @@
   <ItemGroup>
     <EmbeddedResource Include="..\packages\clrsecurity_june10\Security.Cryptography.dll">
       <LogicalName>$(TargetName).EmbeddedDlls.Security.Cryptography.dll</LogicalName>
+      <Link>References\Security.Cryptography.dll</Link>
     </EmbeddedResource>
     <EmbeddedResource Include="..\packages\CommandLineParser.1.9.71\lib\net45\CommandLine.dll">
       <LogicalName>$(TargetName).EmbeddedDlls.CommandLine.dll</LogicalName>
+      <Link>References\CommandLine.dll</Link>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
