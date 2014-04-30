@@ -80,7 +80,7 @@ namespace BulkFileEncrypter
 
         public IList<EncryptOperation> GenerateEncryptionFileList(EncryptOptions options)
         {
-            var fileNames = _fileSource.GetFilesRecursive(options.SourceDir).Where(x => string.IsNullOrWhiteSpace(options.IgnoreFilePath) || !x.Contains(options.IgnoreFilePath));
+            var fileNames = CreateFileList(options.SourceDir, options.IgnoreFilePath);
             var files = EncryptOperationFactory.Build(options.SourceDir, fileNames, options.BinaryKey[0], options.Levels).ToList();
 
             if (!options.Force)
@@ -88,17 +88,6 @@ namespace BulkFileEncrypter
                 files = files.Where(x => IsSourceFileNewer(x.FileName, Path.Combine(options.DestinationDir, x.EncFileName))).ToList();
             }
             return files;
-        }
-
-        private static bool IsSourceFileNewer(string sourceFileName, string destinationFileName)
-        {
-            if (!File.Exists(destinationFileName))
-            {
-                return true;
-            }
-
-
-            return File.GetLastWriteTimeUtc(sourceFileName) > File.GetLastWriteTimeUtc(destinationFileName);
         }
 
         public long PerformEncryption(CommonOptions options, IOutputHandler outputHandler, EncryptOperation o, byte[] key)
@@ -122,7 +111,7 @@ namespace BulkFileEncrypter
             outputHandler.WriteVerbose("Pruning files");
 
             int count = 0;
-            var fileNames = _fileSource.GetFilesRecursive(options.SourceDir).Where(x => string.IsNullOrWhiteSpace(options.IgnoreFilePath) || !x.Contains(options.IgnoreFilePath));
+            var fileNames = CreateFileList(options.SourceDir, options.IgnoreFilePath);
             var validFiles = EncryptOperationFactory.Build(options.SourceDir, fileNames, options.BinaryKey[0], options.Levels).Select(x => x.EncFileName);
             var validHashes = new HashSet<string>(validFiles.Select(Path.GetFileName));
             foreach (var file in _fileSource.GetFilesRecursive(options.DestinationDir))
@@ -141,6 +130,22 @@ namespace BulkFileEncrypter
             }
 
             outputHandler.WriteVerboseLine(count == 0 ? " (no files found)" : "Pruned " + count + " files");
+        }
+
+        public IEnumerable<string> CreateFileList(string directory, string ignorePattern)
+        {
+            return _fileSource.GetFilesRecursive(directory).Where(x => string.IsNullOrWhiteSpace(ignorePattern) || !x.Contains(ignorePattern));
+        }
+
+        private static bool IsSourceFileNewer(string sourceFileName, string destinationFileName)
+        {
+            if (!File.Exists(destinationFileName))
+            {
+                return true;
+            }
+
+
+            return File.GetLastWriteTimeUtc(sourceFileName) > File.GetLastWriteTimeUtc(destinationFileName);
         }
     }
 
