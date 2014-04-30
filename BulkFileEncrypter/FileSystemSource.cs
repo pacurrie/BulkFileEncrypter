@@ -4,9 +4,9 @@ using System.Linq;
 
 namespace BulkFileEncrypter
 {
-    public static class DirectoryDigger
+    public class FileSystemSource : IFileSource
     {
-        public static IEnumerable<string> GetFilesRecursive(string directory)
+        public IEnumerable<string> GetFilesRecursive(string directory)
         {
             foreach (var f in Directory.EnumerateFiles(directory))
             {

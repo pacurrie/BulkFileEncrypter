@@ -69,11 +69,12 @@
   <ItemGroup>
     <Compile Include="CommandDispatcher.cs" />
     <Compile Include="CommandLineParsing.cs" />
-    <Compile Include="DirectoryDigger.cs" />
     <Compile Include="EncryptOperation.cs" />
     <Compile Include="EntryPoint.cs" />
     <Compile Include="FileEncrypter.cs" />
+    <Compile Include="FileSystemSource.cs" />
     <Compile Include="Hashing.cs" />
+    <Compile Include="IFileSource.cs" />
     <Compile Include="IOutputHandler.cs" />
     <Compile Include="StdOutHandler.cs" />
     <Compile Include="TopLevelControlFlow.cs" />

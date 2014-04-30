@@ -12,13 +12,14 @@ namespace BulkFileEncrypter
     {
         public static void Encrypt(EncryptOptions options, IOutputHandler outputHandler)
         {
-            PerformCommand(options, outputHandler, "Encryption", () => EncryptCommandHelper.GenerateEncryptionFileList(options), EncryptCommandHelper.PerformEncryption);
-            if (options.Prune) EncryptCommandHelper.PruneEncryptedDirectory(options, outputHandler);
+            var helper = new EncryptCommandHelper();
+            PerformCommand(options, outputHandler, "Encryption", () => helper.GenerateEncryptionFileList(options), helper.PerformEncryption);
+            if (options.Prune) helper.PruneEncryptedDirectory(options, outputHandler);
         }
 
         public static void Decrypt(DecryptOptions options, IOutputHandler outputHandler)
         {
-            PerformCommand(options, outputHandler, "Decryption", () => DirectoryDigger.GetFilesRecursive(options.SourceDir).ToList(), DecryptCommandHelper.PerformDecryption);
+            PerformCommand(options, outputHandler, "Decryption", () => new FileSystemSource().GetFilesRecursive(options.SourceDir).ToList(), DecryptCommandHelper.PerformDecryption);
         }
 
         private static void PerformCommand<T>(CommonOptions options, IOutputHandler outputHandler, string action, Func<IList<T>> fileList, Func<CommonOptions, IOutputHandler, T, byte[], long> operation)
@@ -68,11 +69,18 @@ namespace BulkFileEncrypter
         }
     }
 
-    public static class EncryptCommandHelper
+    public class EncryptCommandHelper
     {
-        public static IList<EncryptOperation> GenerateEncryptionFileList(EncryptOptions options)
+        private IFileSource _fileSource;
+
+        public EncryptCommandHelper(IFileSource fileSource = null)
         {
-            var fileNames = DirectoryDigger.GetFilesRecursive(options.SourceDir).Where(x => string.IsNullOrWhiteSpace(options.IgnoreFilePath) || !x.Contains(options.IgnoreFilePath));
+            _fileSource = fileSource ?? new FileSystemSource();
+        }
+
+        public IList<EncryptOperation> GenerateEncryptionFileList(EncryptOptions options)
+        {
+            var fileNames = _fileSource.GetFilesRecursive(options.SourceDir).Where(x => string.IsNullOrWhiteSpace(options.IgnoreFilePath) || !x.Contains(options.IgnoreFilePath));
             var files = EncryptOperationFactory.Build(options.SourceDir, fileNames, options.BinaryKey[0], options.Levels).ToList();
 
             if (!options.Force)
@@ -93,7 +101,7 @@ namespace BulkFileEncrypter
             return File.GetLastWriteTimeUtc(sourceFileName) > File.GetLastWriteTimeUtc(destinationFileName);
         }
 
-        public static long PerformEncryption(CommonOptions options, IOutputHandler outputHandler, EncryptOperation o, byte[] key)
+        public long PerformEncryption(CommonOptions options, IOutputHandler outputHandler, EncryptOperation o, byte[] key)
         {
             outputHandler.WriteVerbose("\t{0} => ", o.RelFileName);
 
@@ -108,16 +116,16 @@ namespace BulkFileEncrypter
             return 0;
         }
 
-        public static void PruneEncryptedDirectory(EncryptOptions options, IOutputHandler outputHandler)
+        public void PruneEncryptedDirectory(EncryptOptions options, IOutputHandler outputHandler)
         {
             outputHandler.WriteVerboseLine();
             outputHandler.WriteVerbose("Pruning files");
 
             int count = 0;
-            var fileNames = DirectoryDigger.GetFilesRecursive(options.SourceDir).Where(x => string.IsNullOrWhiteSpace(options.IgnoreFilePath) || !x.Contains(options.IgnoreFilePath));
+            var fileNames = _fileSource.GetFilesRecursive(options.SourceDir).Where(x => string.IsNullOrWhiteSpace(options.IgnoreFilePath) || !x.Contains(options.IgnoreFilePath));
             var validFiles = EncryptOperationFactory.Build(options.SourceDir, fileNames, options.BinaryKey[0], options.Levels).Select(x => x.EncFileName);
             var validHashes = new HashSet<string>(validFiles.Select(Path.GetFileName));
-            foreach (var file in DirectoryDigger.GetFilesRecursive(options.DestinationDir))
+            foreach (var file in _fileSource.GetFilesRecursive(options.DestinationDir))
             {
                 var fileName = Path.GetFileName(file);
                 if (!string.IsNullOrWhiteSpace(fileName) && !validHashes.Contains(fileName))
