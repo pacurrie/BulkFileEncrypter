@@ -3,11 +3,11 @@ This is a tool for bulk encrypting a directory structure
 
 Quick usage guide:
 
-Generate an encryption key:
+Generate an encryption key: (Do not lose your key, it's impossible to recover. Also don't use this one.)
 	>BulkFileEncrypter.exe generate
 	Generated key: prMA0S3K5Bdv8tDyJbFKFR4U01hKwdUFCPYRU+pZv7M=
 
-Use this key to encrypt a directory (do not lose your key, it's impossible to recover. Also don't use this one.):
+Use this key to encrypt a directory:
 	>BulkFileEncrypter.exe encrypt -s c:\temp\original -d c:\temp\encrypted -k prMA0S3K5Bdv8tDyJbFKFR4U01hKwdUFCPYRU+pZv7M=
 
 Decrypt files with the same key:
