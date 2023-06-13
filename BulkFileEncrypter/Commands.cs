@@ -30,6 +30,7 @@ public class Commands : ICommands
         if (ChaCha20Poly1305.IsSupported == false)
         {
             Console.WriteLine("ChaCha20 with Poly1305 is not supported on this platform.");
+            return -1;
         }
         
         
