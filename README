@@ -1,25 +1,22 @@
-This is a tool for bulk encrypting a directory structure
+This is a tool for bulk encrypting all files in a directory structure using ChaCha20-Poly1305
 
 
 Quick usage guide:
 
 Generate an encryption key: (Do not lose your key, it's impossible to recover. Also don't use this one.)
 	>BulkFileEncrypter.exe generate
-	Generated key: prMA0S3K5Bdv8tDyJbFKFR4U01hKwdUFCPYRU+pZv7M=
+	key: fovwUKj+tsVdo9VU1pnTBjKU1rmIUI++LaRG/j2O9cc=
 
 Use this key to encrypt a directory:
-	>BulkFileEncrypter.exe encrypt -s c:\temp\original -d c:\temp\encrypted -k prMA0S3K5Bdv8tDyJbFKFR4U01hKwdUFCPYRU+pZv7M=
+	>BulkFileEncrypter.exe encrypt c:\temp\original c:\temp\encrypted fovwUKj+tsVdo9VU1pnTBjKU1rmIUI++LaRG/j2O9cc=
 
 Decrypt files with the same key:
-	>BulkFileEncrypter.exe decrypt -s c:\temp\encrypted -d c:\temp\decrypted -k prMA0S3K5Bdv8tDyJbFKFR4U01hKwdUFCPYRU+pZv7M=
+	>BulkFileEncrypter.exe decrypt c:\temp\encrypted c:\temp\decrypted fovwUKj+tsVdo9VU1pnTBjKU1rmIUI++LaRG/j2O9cc=
 
 
 
 Requirements for build:
-Visual Studio 2012 and .NET 4.5 (probably easily portable to .NET 3.5)
-You need to download the CLR Security DLLs separately due to licensing restrictions. Download the clrsecurity_june10.zip from the site and unpack it to the directory named "packages\clrsecurity_june10".
+.NET 7 SDK
 
-
-Referenced software:
-Command Line Parser Library by Giacomo Stelluti Scala (http://commandline.codeplex.com/)
-CLR Security (Security.Cryptography.dll) (http://clrsecurity.codeplex.com/)
+Build as single file executable:
+dotnet publish -r win-x64 -c Release --self-contained /p:PublishSingleFile=true
